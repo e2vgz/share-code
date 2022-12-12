@@ -1,0 +1,121 @@
+if (interaction.commandName === 'share') {
+
+if (cooldown.has(interaction.guild.id)) {
+
+interaction.reply({embeds:[
+
+new Discord.MessageEmbed()
+
+.setColor('#D398B6')
+
+.setDescription("❌️ | please wait 1 hour to share again")
+
+],ephemeral:true});
+
+    } else {
+
+if(!interaction.member.permissions.has("ADMINISTRATOR")) return interaction.reply({embeds:[
+
+  new Discord.MessageEmbed()
+
+     .setColor('#D398B6')
+
+.setDescription(`You Don't Have enough premission`)
+
+   ], ephemeral:true})
+
+if(!db.has(`share_${interaction.guild.id}`)){
+
+interaction.reply({embeds:[
+
+  new Discord.MessageEmbed()
+
+     .setColor('#D398B6')
+
+.setDescription(`❌️ | can't find share room`)
+
+   ], ephemeral:true})
+
+}else{
+
+const invite = await interaction.channel.createInvite()
+
+client.guilds.cache.forEach((guild) => {
+
+let data = db.get(`share_${guild.id}`);
+
+if (data == null) return;
+
+if (guild.id == null) return;
+
+let your = db.get(`share_${interaction.guild.id}`)
+
+let row = new Discord.MessageActionRow()
+
+			.addComponents(				new Discord.MessageButton()
+
+					.setLabel(`${interaction.guild.name}`)
+
+					.setURL(`${invite}`)
+
+					.setEmoji("📎")
+
+					.setStyle('LINK'),
+
+                        				new Discord.MessageButton()
+
+                .setCustomId("125")
+
+               .setEmoji('☁️')
+
+                .setLabel(`Boosts: ${interaction.guild.premiumSubscriptionCount || '0'}`)
+
+  .setStyle("PRIMARY"),
+
+					);
+
+let e = new Discord.MessageEmbed()
+
+.setAuthor({name:interaction.guild.name,icon_url:interaction.guild.iconURL()})
+
+.setThumbnail(interaction.guild.iconURL({inline: true}))
+
+.setColor(db.get(`color_${interaction.guild.id}`))
+
+.addField('**📜 | Desc:**' , `${your.desc} `)
+
+.addField('** 📆 | created at:**' , `<t:${~~(interaction.guild.createdTimestamp / 1000)}:d> `,true)
+
+.addField('** 👤 | members count**:' , `${interaction.guild.memberCount}`,true)
+
+.addField('** 💬 | Channels Count**:' , `${interaction.guild.channels.cache.size}`,true)
+
+.setImage(db.get(`banner_${interaction.guild.id}`))
+
+client.channels.cache.get(data?.ChannelID)?.send({content: `<:emoji_2:1040576782019088384> ${invite}`,embeds:[e], components:[row]})
+
+})
+
+interaction.reply({embeds:[new Discord.MessageEmbed()
+
+     .setColor('#D398B6')
+
+.setDescription(" ✅️ | Done Shared Your Server in " + `\`\`${client.guilds.cache.size} server \`\``)
+
+   ], ephemeral:true})
+
+      cooldown.add(interaction.guild.id);
+
+        setTimeout(() => {
+
+                    cooldown.delete(interaction.guild.id);
+
+        }, 60000);
+
+       } 
+
+    }
+
+    }
+
+    ///////
